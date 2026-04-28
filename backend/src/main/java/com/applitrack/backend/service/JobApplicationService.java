@@ -1,7 +1,7 @@
 package com.applitrack.backend.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.applitrack.backend.dto.JobApplicationDTO;
@@ -51,11 +51,9 @@ public class JobApplicationService {
     }
 
     // GET ALL
-    public List<JobApplicationDTO> getAllJobApplications(Long userId) {
-        return jobApplicationRepository.findByUserId(userId)
-                .stream()
-                .map(JobApplicationMapper::toDTO)
-                .toList();
+    public Page<JobApplicationDTO> getAllJobApplications(Long userId, Pageable pageable) {
+        return jobApplicationRepository.findByUserId(userId, pageable)
+                .map(JobApplicationMapper::toDTO);
     }
 
     // UPDATE

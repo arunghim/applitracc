@@ -1,7 +1,6 @@
 package com.applitrack.backend.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.applitrack.backend.dto.JobApplicationDTO;
 import com.applitrack.backend.service.JobApplicationService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users/{userId}/applications")
@@ -28,7 +29,7 @@ public class JobApplicationController {
     @PostMapping
     public ResponseEntity<JobApplicationDTO> create(
             @PathVariable Long userId,
-            @RequestBody JobApplicationDTO dto) {
+            @Valid @RequestBody JobApplicationDTO dto) {
 
         return ResponseEntity.ok(jobApplicationService.createJobApplication(userId, dto));
     }
@@ -42,10 +43,13 @@ public class JobApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JobApplicationDTO>> getAll(
-            @PathVariable Long userId) {
+    public ResponseEntity<?> getAll(
+            @PathVariable Long userId,
+            Pageable pageable) {
 
-        return ResponseEntity.ok(jobApplicationService.getAllJobApplications(userId));
+        return ResponseEntity.ok(
+                jobApplicationService.getAllJobApplications(userId, pageable)
+        );
     }
 
     @PutMapping("/{appId}")

@@ -2,16 +2,31 @@ package com.applitrack.backend.dto;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class JobApplicationDTO {
 
     private Long id;
+
+    @NotBlank(message = "company is required")
     private String company;
+
+    @NotBlank(message = "role is required")
     private String role;
-    private String salary;
+
+    @NotBlank(message = "status is required")
     private String status;
+
+    @Size(max = 5000, message = "Notes must be under 5000 characters")
     private String notes;
+
+    private String salary;
     private String link;
     private LocalDate appliedDate;
+
+    public JobApplicationDTO() {
+    }
 
     public Long getId() {
         return id;

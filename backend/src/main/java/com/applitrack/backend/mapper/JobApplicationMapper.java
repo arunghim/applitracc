@@ -15,6 +15,8 @@ public class JobApplicationMapper {
         dto.setNotes(application.getNotes());
         dto.setLink(application.getLink());
         dto.setAppliedDate(application.getAppliedDate());
+        dto.setCreatedAt(application.getCreatedAt());
+        dto.setUpdatedAt(application.getUpdatedAt());
         return dto;
     }
 
@@ -28,5 +30,15 @@ public class JobApplicationMapper {
         application.setLink(dto.getLink());
         application.setAppliedDate(dto.getAppliedDate());
         return application;
+    }
+
+    public static void updateEntity(JobApplication entity, JobApplicationDTO dto) {
+        entity.setCompany(dto.getCompany());
+        entity.setRole(dto.getRole());
+        entity.setSalary(dto.getSalary());
+        entity.setStatus(dto.getStatus());
+        entity.setNotes(dto.getNotes());
+        entity.setLink(dto.getLink());
+        entity.setAppliedDate(dto.getAppliedDate());
     }
 }

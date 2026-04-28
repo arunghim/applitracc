@@ -1,8 +1,12 @@
 package com.applitrack.backend.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.applitrack.backend.model.JobStatus;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class JobApplicationDTO {
@@ -15,8 +19,8 @@ public class JobApplicationDTO {
     @NotBlank(message = "role is required")
     private String role;
 
-    @NotBlank(message = "status is required")
-    private String status;
+    @NotNull(message = "status is required")
+    private JobStatus status;
 
     @Size(max = 5000, message = "Notes must be under 5000 characters")
     private String notes;
@@ -24,6 +28,8 @@ public class JobApplicationDTO {
     private String salary;
     private String link;
     private LocalDate appliedDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public JobApplicationDTO() {
     }
@@ -60,11 +66,11 @@ public class JobApplicationDTO {
         this.salary = salary;
     }
 
-    public String getStatus() {
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(JobStatus status) {
         this.status = status;
     }
 
@@ -90,6 +96,21 @@ public class JobApplicationDTO {
 
     public void setAppliedDate(LocalDate appliedDate) {
         this.appliedDate = appliedDate;
+    }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

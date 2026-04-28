@@ -1,9 +1,15 @@
 package com.applitrack.backend.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,28 +35,25 @@ public class JobApplication {
 
     private String salary;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private JobStatus status;
 
-    @Column(length = 2000)
+    @Column(length = 5000)
     private String notes;
 
     private String link;
 
     private LocalDate appliedDate;
 
-    public JobApplication() {
-    }
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    public JobApplication(AppUser user, String company, String role, String salary,
-            String status, String notes, String link, LocalDate appliedDate) {
-        this.user = user;
-        this.company = company;
-        this.role = role;
-        this.salary = salary;
-        this.status = status;
-        this.notes = notes;
-        this.link = link;
-        this.appliedDate = appliedDate;
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    public JobApplication() {
     }
 
     public Long getId() {
@@ -93,11 +96,11 @@ public class JobApplication {
         this.salary = salary;
     }
 
-    public String getStatus() {
+    public JobStatus getStatus() {
         return this.status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(JobStatus status) {
         this.status = status;
     }
 
@@ -123,5 +126,13 @@ public class JobApplication {
 
     public void setAppliedDate(LocalDate appliedDate) {
         this.appliedDate = appliedDate;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

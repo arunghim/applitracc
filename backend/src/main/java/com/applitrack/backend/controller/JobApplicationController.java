@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,66 +19,71 @@ import com.applitrack.backend.api.ApiResponse;
 import com.applitrack.backend.dto.JobApplicationDTO;
 import com.applitrack.backend.model.JobStatus;
 import com.applitrack.backend.service.JobApplicationService;
+import com.applitrack.backend.service.UserService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/users/{userId}/applications")
+@RequestMapping("/api/applications")
 public class JobApplicationController {
 
     private final JobApplicationService jobApplicationService;
+    private final UserService userService;
 
-    public JobApplicationController(JobApplicationService jobApplicationService) {
+    public JobApplicationController(JobApplicationService jobApplicationService, UserService userService) {
         this.jobApplicationService = jobApplicationService;
+        this.userService = userService;
+    }
+
+    private Long getAuthenticatedUserId() {
+        throw new UnsupportedOperationException("Unimplemented method 'getAuthenticatedUserId'");
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<JobApplicationDTO>> create(
-            @PathVariable Long userId,
             @Valid @RequestBody JobApplicationDTO dto) {
 
-        JobApplicationDTO created = jobApplicationService.createJobApplication(userId, dto);
+        JobApplicationDTO created = jobApplicationService.createJobApplication(getAuthenticatedUserId(), dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Application created", created));
     }
 
     @GetMapping("/{appId}")
     public ResponseEntity<ApiResponse<JobApplicationDTO>> getOne(
-            @PathVariable Long userId,
             @PathVariable Long appId) {
 
         return ResponseEntity.ok(
-                ApiResponse.success("Application retrieved", jobApplicationService.getJobApplication(userId, appId)));
+                ApiResponse.success("Application retrieved",
+                        jobApplicationService.getJobApplication(getAuthenticatedUserId(), appId)));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<JobApplicationDTO>>> getAll(
-            @PathVariable Long userId,
             @RequestParam(required = false) JobStatus status,
             @RequestParam(required = false) String company,
             Pageable pageable) {
 
         return ResponseEntity.ok(
                 ApiResponse.success("Applications retrieved",
-                        jobApplicationService.getAllJobApplications(userId, status, company, pageable)));
+                        jobApplicationService.getAllJobApplications(getAuthenticatedUserId(), status, company,
+                                pageable)));
     }
 
     @PutMapping("/{appId}")
     public ResponseEntity<ApiResponse<JobApplicationDTO>> update(
-            @PathVariable Long userId,
             @PathVariable Long appId,
             @Valid @RequestBody JobApplicationDTO dto) {
 
         return ResponseEntity.ok(
-                ApiResponse.success("Application updated", jobApplicationService.updateApplication(userId, appId, dto)));
+                ApiResponse.success("Application updated",
+                        jobApplicationService.updateApplication(getAuthenticatedUserId(), appId, dto)));
     }
 
     @DeleteMapping("/{appId}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long userId,
             @PathVariable Long appId) {
 
-        jobApplicationService.deleteApplication(userId, appId);
+        jobApplicationService.deleteApplication(getAuthenticatedUserId(), appId);
         return ResponseEntity.noContent().build();
     }
 }

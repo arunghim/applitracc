@@ -15,7 +15,6 @@ import com.applitrack.backend.mapper.JobApplicationMapper;
 import com.applitrack.backend.model.AppUser;
 import com.applitrack.backend.model.JobApplication;
 import com.applitrack.backend.model.JobStatus;
-import com.applitrack.backend.repository.AppUserRepository;
 import com.applitrack.backend.repository.JobApplicationRepository;
 
 @Service
@@ -25,19 +24,17 @@ public class JobApplicationService {
     private static final Logger log = LoggerFactory.getLogger(JobApplicationService.class);
 
     private final JobApplicationRepository jobApplicationRepository;
-    private final AppUserRepository appUserRepository;
+    private final UserService userService;
 
     public JobApplicationService(JobApplicationRepository jobApplicationRepository,
-            AppUserRepository appUserRepository) {
+            UserService userService) {
         this.jobApplicationRepository = jobApplicationRepository;
-        this.appUserRepository = appUserRepository;
+        this.userService = userService;
     }
 
     @Transactional
     public JobApplicationDTO createJobApplication(Long userId, JobApplicationDTO dto) {
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
-                "User not found with id: " + userId));
+        AppUser user = userService.getUserById(userId);
 
         JobApplication application = JobApplicationMapper.toEntity(dto);
         application.setUser(user);
@@ -92,6 +89,6 @@ public class JobApplicationService {
     private JobApplication getOwnedApplication(Long userId, Long appId) {
         return jobApplicationRepository.findByUserIdAndId(userId, appId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.APPLICATION_NOT_FOUND,
-                "Application not found with id: " + appId));
+                        "Application not found with id: " + appId));
     }
 }

@@ -18,26 +18,32 @@ public class UserService {
     }
 
     public AppUser getUserById(Long id) {
-        throw new UnsupportedOperationException("Unimplemented method 'getUserById'");
+        return appUserRepository.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
+                        "User not found with id: " + id));
     }
 
     public AppUser getUserByUsername(String username) {
-        throw new UnsupportedOperationException("Unimplemented method 'getUserByUsername'");
+        return appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
+                        "User not found with username: " + username));
     }
 
     public AppUser getUserByEmail(String email) {
-        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
+        return appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
+                        "User not found with email: " + email));
     }
 
     public boolean existsByEmail(String email) {
-        throw new UnsupportedOperationException("Unimplemented method 'existsByEmail'");
+        return appUserRepository.existsByEmail(email);
     }
 
     public boolean existsByUsername(String username) {
-        throw new UnsupportedOperationException("Unimplemented method 'existsByUsername'");
+        return appUserRepository.existsByUsername(username);
     }
 
     public AppUser saveUser(AppUser appUser) {
-        throw new UnsupportedOperationException("Unimplemented method 'saveUser'");
+        return appUserRepository.save(appUser);
     }
 }

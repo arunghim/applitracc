@@ -21,10 +21,37 @@ public class AuthService {
     }
 
     public String registerAppUser(AppUserAuthDto appUserAuthDto) {
-        throw new UnsupportedOperationException("Unimplemented method 'registerAppUser'");
+        if (userService.existsByUsername(appUserAuthDto.getUsername())) {
+            return "Username already exists";
+        }
+        if (userService.existsByEmail(appUserAuthDto.getEmail())) {
+            return "Email already exists";
+        }
+
+        AppUser appUser = new AppUser();
+        appUser.setUsername(appUserAuthDto.getUsername());
+        appUser.setEmail(appUserAuthDto.getEmail());
+        appUser.setPassword(passwordEncoder.encode(appUserAuthDto.getPassword()));
+
+        userService.saveUser(appUser);
+
+        return "User registered successfully";
     }
 
     public AppUserLoginResponseDto loginAppUser(AppUserAuthDto appUserAuthDto) {
-        throw new UnsupportedOperationException("Unimplemented method 'loginAppUser'");
+        AppUser appUser;
+
+        try {
+            appUser = userService.getUserByUsername(appUserAuthDto.getUsername());
+        } catch (Exception e) {
+            return new AppUserLoginResponseDto("Invalid username or password", null);
+        }
+
+        if (!passwordEncoder.matches(appUserAuthDto.getPassword(), appUser.getPassword())) {
+            return new AppUserLoginResponseDto("Invalid username or password", null);
+        }
+
+        String token = jwtService.generateToken(appUser.getUsername());
+        return new AppUserLoginResponseDto("Login successful", token);
     }
 }

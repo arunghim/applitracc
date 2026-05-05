@@ -24,26 +24,38 @@ public class JwtService {
     private long expiration;
 
     public String generateToken(String username) {
-        throw new UnsupportedOperationException("Unimplemented method 'generateToken'");
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     public String extractUsername(String token) {
-        throw new UnsupportedOperationException("Unimplemented method 'extractUsername'");
+        return extractClaim(token, Claims::getSubject);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        throw new UnsupportedOperationException("Unimplemented method 'isTokenValid'");
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     private boolean isTokenExpired(String token) {
-        throw new UnsupportedOperationException("Unimplemented method 'isTokenExpired'");
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        throw new UnsupportedOperationException("Unimplemented method 'extractClaim'");
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claimsResolver.apply(claims);
     }
 
     private SecretKey getSigningKey() {
-        throw new UnsupportedOperationException("Unimplemented method 'getSigningKey'");
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

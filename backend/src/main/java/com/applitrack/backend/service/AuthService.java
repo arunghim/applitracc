@@ -44,14 +44,14 @@ public class AuthService {
         try {
             appUser = userService.getUserByUsername(appUserAuthDto.getUsername());
         } catch (Exception e) {
-            return new AppUserLoginResponseDto("Invalid username or password", null);
+            return new AppUserLoginResponseDto(null, null);
         }
 
         if (!passwordEncoder.matches(appUserAuthDto.getPassword(), appUser.getPassword())) {
-            return new AppUserLoginResponseDto("Invalid username or password", null);
+            return new AppUserLoginResponseDto(null, null);
         }
 
         String token = jwtService.generateToken(appUser.getUsername());
-        return new AppUserLoginResponseDto("Login successful", token);
+        return new AppUserLoginResponseDto(token, appUser.getUsername());
     }
 }

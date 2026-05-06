@@ -25,11 +25,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@RequestBody AppUserAuthDto appUserAuthDto) {
-        throw new UnsupportedOperationException("Unimplemented method 'register'");
+        String result = authService.registerAppUser(appUserAuthDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("User registered successfully", result));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AppUserLoginResponseDto>> login(@RequestBody AppUserAuthDto appUserAuthDto) {
-        throw new UnsupportedOperationException("Unimplemented method 'login'");
+        AppUserLoginResponseDto response = authService.loginAppUser(appUserAuthDto);
+
+        if (response.getToken() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Login failed", "Invalid username or password",
+                            ErrorCode.UNAUTHORIZED_ACCESS));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 }

@@ -36,7 +36,8 @@ public class JobApplicationController {
     }
 
     private Long getAuthenticatedUserId() {
-        throw new UnsupportedOperationException("Unimplemented method 'getAuthenticatedUserId'");
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userService.getUserByUsername(username).getId();
     }
 
     @PostMapping

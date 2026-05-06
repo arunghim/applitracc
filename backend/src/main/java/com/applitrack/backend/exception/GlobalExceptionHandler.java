@@ -15,11 +15,19 @@ import com.applitrack.backend.api.ApiResponse;
 import com.applitrack.backend.api.ErrorCode;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUsernameNotFound(UsernameNotFoundException ex) {
+        log.warn("Authentication failed - user not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("Unauthorized", ex.getMessage(), ErrorCode.UNAUTHORIZED_ACCESS));
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(EntityNotFoundException ex) {

@@ -18,3 +18,17 @@ async function request(path, options = {}) {
 }
 
 export const getHealth = () => request("/health");
+
+export const register = async (username, email, password) => {};
+
+export const login = async (username, password) => {};
+
+export const createApplication = async (application) => {};
+
+export const getApplication = async (applicationId) => {};
+
+export const getAllApplications = async () => {};
+
+export const updateApplication = async (applicationId, application) => {};
+
+export const deleteApplication = async (applicationId) => {};

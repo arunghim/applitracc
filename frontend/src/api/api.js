@@ -19,9 +19,23 @@ async function request(path, options = {}) {
 
 export const getHealth = () => request("/health");
 
-export const register = async (username, email, password) => {};
+export const register = (firstName, lastName, email, password) =>
+  request("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ firstName, lastName, email, password }),
+  });
 
-export const login = async (username, password) => {};
+export const login = async (email, password) => {
+  const res = await request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  const { token, firstName, lastName } = res.data;
+  localStorage.setItem("token", token);
+  localStorage.setItem("firstName", firstName);
+  localStorage.setItem("lastName", lastName);
+  return res;
+};
 
 export const createApplication = async (application) => {};
 

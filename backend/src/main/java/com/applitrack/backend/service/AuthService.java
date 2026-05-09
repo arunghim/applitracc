@@ -42,14 +42,14 @@ public class AuthService {
         try {
             appUser = userService.getUserByEmail(appUserAuthDto.getEmail());
         } catch (Exception e) {
-            return new AppUserLoginResponseDto(null, null);
+            return new AppUserLoginResponseDto(null, null, null, null);
         }
 
         if (!passwordEncoder.matches(appUserAuthDto.getPassword(), appUser.getPassword())) {
-            return new AppUserLoginResponseDto(null, null);
+            return new AppUserLoginResponseDto(null, null, null, null);
         }
 
         String token = jwtService.generateToken(appUser.getEmail());
-        return new AppUserLoginResponseDto(token, appUser.getEmail());
+        return new AppUserLoginResponseDto(token, appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
     }
 }

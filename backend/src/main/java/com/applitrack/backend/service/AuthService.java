@@ -21,15 +21,13 @@ public class AuthService {
     }
 
     public String registerAppUser(AppUserAuthDto appUserAuthDto) {
-        if (userService.existsByUsername(appUserAuthDto.getUsername())) {
-            return "Username already exists";
-        }
         if (userService.existsByEmail(appUserAuthDto.getEmail())) {
             return "Email already exists";
         }
 
         AppUser appUser = new AppUser();
-        appUser.setUsername(appUserAuthDto.getUsername());
+        appUser.setFirstName(appUserAuthDto.getFirstName());
+        appUser.setLastName(appUserAuthDto.getLastName());
         appUser.setEmail(appUserAuthDto.getEmail());
         appUser.setPassword(passwordEncoder.encode(appUserAuthDto.getPassword()));
 
@@ -42,7 +40,7 @@ public class AuthService {
         AppUser appUser;
 
         try {
-            appUser = userService.getUserByUsername(appUserAuthDto.getUsername());
+            appUser = userService.getUserByEmail(appUserAuthDto.getEmail());
         } catch (Exception e) {
             return new AppUserLoginResponseDto(null, null);
         }
@@ -51,7 +49,7 @@ public class AuthService {
             return new AppUserLoginResponseDto(null, null);
         }
 
-        String token = jwtService.generateToken(appUser.getUsername());
-        return new AppUserLoginResponseDto(token, appUser.getUsername());
+        String token = jwtService.generateToken(appUser.getEmail());
+        return new AppUserLoginResponseDto(token, appUser.getEmail());
     }
 }

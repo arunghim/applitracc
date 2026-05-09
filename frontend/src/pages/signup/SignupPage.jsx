@@ -10,8 +10,12 @@ function SignupPage() {
       <h1>Sign Up</h1>
       <form>
         <div>
-          <label htmlFor="username">Username</label>
-          <input id="username" type="text" />
+          <label htmlFor="firstName">First Name</label>
+          <input id="firstName" type="text" />
+        </div>
+        <div>
+          <label htmlFor="lastName">Last Name</label>
+          <input id="lastName" type="text" />
         </div>
         <div>
           <label htmlFor="email">Email</label>

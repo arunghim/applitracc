@@ -23,12 +23,6 @@ public class UserService {
                         "User not found with id: " + id));
     }
 
-    public AppUser getUserByUsername(String username) {
-        return appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
-                        "User not found with username: " + username));
-    }
-
     public AppUser getUserByEmail(String email) {
         return appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND,
@@ -37,10 +31,6 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return appUserRepository.existsByEmail(email);
-    }
-
-    public boolean existsByUsername(String username) {
-        return appUserRepository.existsByUsername(username);
     }
 
     public AppUser saveUser(AppUser appUser) {

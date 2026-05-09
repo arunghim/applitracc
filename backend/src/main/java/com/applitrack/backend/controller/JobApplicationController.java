@@ -36,8 +36,8 @@ public class JobApplicationController {
     }
 
     private Long getAuthenticatedUserId() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userService.getUserByUsername(username).getId();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userService.getUserByEmail(email).getId();
     }
 
     @PostMapping

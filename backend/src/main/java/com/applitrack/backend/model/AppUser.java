@@ -24,8 +24,11 @@ public class AppUser implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -39,8 +42,9 @@ public class AppUser implements UserDetails {
     public AppUser() {
     }
 
-    public AppUser(String username, String email, String password) {
-        this.username = username;
+    public AppUser(String firstName, String lastName, String email, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.password = password;
     }
@@ -53,12 +57,26 @@ public class AppUser implements UserDetails {
         this.id = id;
     }
 
+    // Returns email as the Spring Security principal identifier
+    @Override
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {

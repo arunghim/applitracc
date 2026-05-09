@@ -4,6 +4,7 @@ import StatusPage from "./pages/status/StatusPage";
 import LoginPage from "./pages/login/LoginPage";
 import SignupPage from "./pages/signup/SignupPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route } from "react-router";
 
 function App() {
@@ -13,7 +14,14 @@ function App() {
       <Route path="/health" element={<StatusPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

@@ -1,7 +1,19 @@
+import { Link } from "react-router";
+
 function HomePage() {
   return (
     <div>
-      <h1>applitrack</h1>
+      <nav>
+        <Link to="/login">Login</Link>
+        <Link to="/signup">Sign Up</Link>
+      </nav>
+      <h1>Welcome to Applitrack</h1>
+      <p>
+        <Link to="/login">Login</Link>
+      </p>
+      <p>
+        <Link to="/signup">Sign Up</Link>
+      </p>
     </div>
   );
 }

@@ -1,5 +1,9 @@
 package com.applitrack.backend.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -13,8 +17,12 @@ import com.applitrack.backend.dto.JobApplicationDTO;
 import com.applitrack.backend.exception.ApiException;
 import com.applitrack.backend.mapper.JobApplicationMapper;
 import com.applitrack.backend.model.AppUser;
+import com.applitrack.backend.model.CustomColumn;
+import com.applitrack.backend.model.CustomColumnValue;
 import com.applitrack.backend.model.JobApplication;
 import com.applitrack.backend.model.JobStatus;
+import com.applitrack.backend.repository.CustomColumnRepository;
+import com.applitrack.backend.repository.CustomColumnValueRepository;
 import com.applitrack.backend.repository.JobApplicationRepository;
 
 @Service
@@ -24,11 +32,17 @@ public class JobApplicationService {
     private static final Logger log = LoggerFactory.getLogger(JobApplicationService.class);
 
     private final JobApplicationRepository jobApplicationRepository;
+    private final CustomColumnRepository customColumnRepository;
+    private final CustomColumnValueRepository customColumnValueRepository;
     private final UserService userService;
 
     public JobApplicationService(JobApplicationRepository jobApplicationRepository,
+            CustomColumnRepository customColumnRepository,
+            CustomColumnValueRepository customColumnValueRepository,
             UserService userService) {
         this.jobApplicationRepository = jobApplicationRepository;
+        this.customColumnRepository = customColumnRepository;
+        this.customColumnValueRepository = customColumnValueRepository;
         this.userService = userService;
     }
 
@@ -38,14 +52,29 @@ public class JobApplicationService {
 
         JobApplication application = JobApplicationMapper.toEntity(dto);
         application.setUser(user);
+        JobApplication saved = jobApplicationRepository.save(application);
 
-        JobApplicationDTO saved = JobApplicationMapper.toDTO(jobApplicationRepository.save(application));
+        List<CustomColumn> userColumns = customColumnRepository.findByUserId(userId);
+        for (CustomColumn col : userColumns) {
+            String val = dto.getCustomValues() != null ? dto.getCustomValues().get(col.getId()) : null;
+            CustomColumnValue ccv = new CustomColumnValue();
+            ccv.setJobApplication(saved);
+            ccv.setCustomColumn(col);
+            ccv.setValue(val);
+            customColumnValueRepository.save(ccv);
+        }
+
+        JobApplicationDTO result = JobApplicationMapper.toDTO(saved);
+        result.setCustomValues(buildCustomValuesMap(saved.getId()));
         log.info("Created application [{}] for user [{}]", saved.getId(), userId);
-        return saved;
+        return result;
     }
 
     public JobApplicationDTO getJobApplication(Long userId, Long appId) {
-        return JobApplicationMapper.toDTO(getOwnedApplication(userId, appId));
+        JobApplication app = getOwnedApplication(userId, appId);
+        JobApplicationDTO dto = JobApplicationMapper.toDTO(app);
+        dto.setCustomValues(buildCustomValuesMap(app.getId()));
+        return dto;
     }
 
     public Page<JobApplicationDTO> getAllJobApplications(
@@ -69,14 +98,33 @@ public class JobApplicationService {
             result = jobApplicationRepository.findByUserId(userId, pageable);
         }
 
-        return result.map(JobApplicationMapper::toDTO);
+        return result.map(app -> {
+            JobApplicationDTO dto = JobApplicationMapper.toDTO(app);
+            dto.setCustomValues(buildCustomValuesMap(app.getId()));
+            return dto;
+        });
     }
 
     @Transactional
     public JobApplicationDTO updateApplication(Long userId, Long appId, JobApplicationDTO dto) {
         JobApplication application = getOwnedApplication(userId, appId);
         JobApplicationMapper.updateEntity(application, dto);
-        return JobApplicationMapper.toDTO(jobApplicationRepository.save(application));
+        jobApplicationRepository.save(application);
+
+        if (dto.getCustomValues() != null) {
+            for (Map.Entry<Long, String> entry : dto.getCustomValues().entrySet()) {
+                customColumnValueRepository
+                        .findByJobApplicationIdAndCustomColumnId(application.getId(), entry.getKey())
+                        .ifPresent(ccv -> {
+                            ccv.setValue(entry.getValue());
+                            customColumnValueRepository.save(ccv);
+                        });
+            }
+        }
+
+        JobApplicationDTO result = JobApplicationMapper.toDTO(application);
+        result.setCustomValues(buildCustomValuesMap(application.getId()));
+        return result;
     }
 
     @Transactional
@@ -90,5 +138,12 @@ public class JobApplicationService {
         return jobApplicationRepository.findByUserIdAndId(userId, appId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ErrorCode.APPLICATION_NOT_FOUND,
                         "Application not found with id: " + appId));
+    }
+
+    private Map<Long, String> buildCustomValuesMap(Long appId) {
+        return customColumnValueRepository.findByJobApplicationId(appId).stream()
+                .collect(Collectors.toMap(
+                        ccv -> ccv.getCustomColumn().getId(),
+                        ccv -> ccv.getValue() != null ? ccv.getValue() : ""));
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 import com.applitrack.backend.model.JobApplication;
 import com.applitrack.backend.model.JobStatus;
 
@@ -24,4 +26,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             JobStatus status,
             String company,
             Pageable pageable);
+
+    List<JobApplication> findAllByUserId(Long userId);
 }

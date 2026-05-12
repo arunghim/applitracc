@@ -2,6 +2,7 @@ package com.applitrack.backend.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import com.applitrack.backend.model.JobStatus;
 
@@ -30,6 +31,7 @@ public class JobApplicationDTO {
     private LocalDate appliedDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Map<Long, String> customValues;
 
     public JobApplicationDTO() {
     }
@@ -112,5 +114,13 @@ public class JobApplicationDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Map<Long, String> getCustomValues() {
+        return customValues;
+    }
+
+    public void setCustomValues(Map<Long, String> customValues) {
+        this.customValues = customValues;
     }
 }

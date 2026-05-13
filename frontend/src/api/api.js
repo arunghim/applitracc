@@ -37,12 +37,56 @@ export const login = async (email, password) => {
   return res;
 };
 
-export const createApplication = async (application) => {};
+const authHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 
-export const getApplication = async (applicationId) => {};
+export const createApplication = (application) =>
+  request("/applications", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(application),
+  });
 
-export const getAllApplications = async () => {};
+export const getApplication = (applicationId) =>
+  request(`/applications/${applicationId}`, { headers: authHeaders() });
 
-export const updateApplication = async (applicationId, application) => {};
+export const getAllApplications = (params = {}) => {
+  const query = new URLSearchParams();
+  if (params.status) query.set("status", params.status);
+  if (params.company) query.set("company", params.company);
+  if (params.page != null) query.set("page", params.page);
+  if (params.size != null) query.set("size", params.size);
+  const qs = query.toString();
+  return request(`/applications${qs ? `?${qs}` : ""}`, {
+    headers: authHeaders(),
+  });
+};
 
-export const deleteApplication = async (applicationId) => {};
+export const updateApplication = (applicationId, application) =>
+  request(`/applications/${applicationId}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(application),
+  });
+
+export const deleteApplication = (applicationId) =>
+  request(`/applications/${applicationId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+
+export const getColumns = () => request("/columns", { headers: authHeaders() });
+
+export const addColumn = (name) =>
+  request("/columns", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ name }),
+  });
+
+export const deleteColumn = (columnId) =>
+  request(`/columns/${columnId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });

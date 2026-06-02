@@ -1,19 +1,15 @@
-import { Link } from "react-router";
+import { useEffect } from "react";
+import Appbar from "../../components/Appbar";
+import "./HomePage.css";
 
 function HomePage() {
+  useEffect(() => {
+    document.title = "Applitrack";
+  }, []);
+
   return (
-    <div>
-      <nav>
-        <Link to="/login">Login</Link>
-        <Link to="/signup">Sign Up</Link>
-      </nav>
-      <h1>Welcome to Applitrack</h1>
-      <p>
-        <Link to="/login">Login</Link>
-      </p>
-      <p>
-        <Link to="/signup">Sign Up</Link>
-      </p>
+    <div className="hp">
+      <Appbar />
     </div>
   );
 }

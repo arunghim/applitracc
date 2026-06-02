@@ -67,6 +67,10 @@ function DashboardPage() {
   const firstName = localStorage.getItem("firstName") ?? "";
   const lastName = localStorage.getItem("lastName") ?? "";
 
+  useEffect(() => {
+    document.title = "Dashboard | Applitrack";
+  }, []);
+
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
   const [error, setError] = useState("");

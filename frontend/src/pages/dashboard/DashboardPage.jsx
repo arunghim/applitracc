@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import {
   getAllApplications,
   createApplication,
@@ -9,6 +9,8 @@ import {
   addColumn,
   deleteColumn,
 } from "../../api/api";
+import Appbar from "../../components/Appbar";
+import "./DashboardPage.css";
 
 const STATUSES = [
   "SAVED",
@@ -24,6 +26,14 @@ function nextTempId() {
   return `new-${++_tempCounter}`;
 }
 
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function emptyRow(cols) {
   const customValues = {};
   cols.forEach((c) => {
@@ -37,7 +47,7 @@ function emptyRow(cols) {
     company: "",
     role: "",
     status: "APPLIED",
-    appliedDate: "",
+    appliedDate: getTodayDate(),
     salary: "",
     link: "",
     notes: "",
@@ -54,7 +64,7 @@ function appToRow(app) {
     company: app.company ?? "",
     role: app.role ?? "",
     status: app.status ?? "APPLIED",
-    appliedDate: app.appliedDate ?? "",
+    appliedDate: app.appliedDate ?? getTodayDate(),
     salary: app.salary ?? "",
     link: app.link ?? "",
     notes: app.notes ?? "",
@@ -76,17 +86,51 @@ function DashboardPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
-  const [showAddField, setShowAddField] = useState(false);
+  const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [newFieldName, setNewFieldName] = useState("");
   const newFieldInputRef = useRef(null);
+
+  const [columnWidths, setColumnWidths] = useState({});
+  const [resizingColumn, setResizingColumn] = useState(null);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  const tableContainerRef = useRef(null);
+  const isDraggingRef = useRef(false);
+  const startScrollLeftRef = useRef(0);
+  const startMouseXRef = useRef(0);
+
+  const [activeSort, setActiveSort] = useState(null);
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    columnId: null,
+    columnName: null,
+    row: null,
+  });
 
   useEffect(() => {
     loadData();
   }, []);
 
   useEffect(() => {
-    if (showAddField) newFieldInputRef.current?.focus();
-  }, [showAddField]);
+    if (showAddFieldModal && newFieldInputRef.current) {
+      setTimeout(() => newFieldInputRef.current?.focus(), 100);
+    }
+  }, [showAddFieldModal]);
+
+  useEffect(() => {
+    const handleClick = () => {
+      if (contextMenu.visible) {
+        setContextMenu({ ...contextMenu, visible: false });
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [contextMenu]);
 
   async function loadData() {
     try {
@@ -108,6 +152,10 @@ function DashboardPage() {
     localStorage.removeItem("firstName");
     localStorage.removeItem("lastName");
     navigate("/");
+  }
+
+  function handleSettings() {
+    navigate("/settings");
   }
 
   function handleCellChange(tempId, field, value) {
@@ -136,14 +184,13 @@ function DashboardPage() {
     setRows((prev) => [...prev, emptyRow(columns)]);
   }
 
-  async function handleAddField(e) {
-    e.preventDefault();
+  async function handleAddField() {
     const name = newFieldName.trim();
     if (!name) return;
     try {
       await addColumn(name);
       setNewFieldName("");
-      setShowAddField(false);
+      setShowAddFieldModal(false);
       await loadData();
     } catch (e) {
       setError(e.message);
@@ -151,27 +198,64 @@ function DashboardPage() {
   }
 
   async function handleDeleteColumn(colId) {
-    if (!confirm("Delete this column and all its values?")) return;
+    setDeleteTarget({ type: "column", id: colId });
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteRow(row) {
+    setDeleteTarget({ type: "row", row });
+    setShowDeleteModal(true);
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteColumn(colId);
+      if (deleteTarget.type === "column") {
+        await deleteColumn(deleteTarget.id);
+      } else if (deleteTarget.type === "row") {
+        if (deleteTarget.row._isNew) {
+          setRows((prev) =>
+            prev.filter((r) => r._tempId !== deleteTarget.row._tempId),
+          );
+        } else {
+          await deleteApplication(deleteTarget.row.id);
+        }
+      }
       await loadData();
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
     } catch (e) {
       setError(e.message);
     }
   }
 
-  async function handleDeleteRow(row) {
-    if (row._isNew) {
-      setRows((prev) => prev.filter((r) => r._tempId !== row._tempId));
-      return;
-    }
-    if (!confirm("Delete this application?")) return;
-    try {
-      await deleteApplication(row.id);
-      await loadData();
-    } catch (e) {
-      setError(e.message);
-    }
+  function handleColumnContextMenu(e, colId, colName) {
+    e.preventDefault();
+    e.stopPropagation();
+    const isCustomColumn = columns.some((c) => c.id === colId);
+    if (!isCustomColumn) return;
+
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      columnId: colId,
+      columnName: colName,
+      row: null,
+    });
+  }
+
+  function handleRowContextMenu(e, row) {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      columnId: null,
+      columnName: null,
+      row: row,
+    });
   }
 
   async function handleSave() {
@@ -218,137 +302,355 @@ function DashboardPage() {
     }
   }
 
+  useEffect(() => {
+    if (rows.some((r) => r._isDirty)) {
+      const timer = setTimeout(() => {
+        handleSave();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [rows]);
+
+  const handleMouseDown = (e) => {
+    if (
+      e.target.classList?.contains("resizer") ||
+      e.target.tagName === "INPUT" ||
+      e.target.tagName === "SELECT" ||
+      e.target.tagName === "TEXTAREA" ||
+      e.target.tagName === "BUTTON"
+    ) {
+      return;
+    }
+
+    isDraggingRef.current = true;
+    startMouseXRef.current = e.pageX;
+    startScrollLeftRef.current = tableContainerRef.current?.scrollLeft || 0;
+    tableContainerRef.current.style.cursor = "grabbing";
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current) return;
+
+    const dx = e.pageX - startMouseXRef.current;
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollLeft = startScrollLeftRef.current - dx;
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+    if (tableContainerRef.current) {
+      tableContainerRef.current.style.cursor = "grab";
+    }
+  };
+
+  useEffect(() => {
+    const container = tableContainerRef.current;
+    if (container) {
+      container.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+
+      return () => {
+        container.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, []);
+
+  const startResize = (colId, startWidth, e) => {
+    e.stopPropagation();
+    setResizingColumn(colId);
+    startXRef.current = e.clientX;
+    startWidthRef.current = startWidth;
+
+    const handleResizeMove = (moveEvent) => {
+      const delta = moveEvent.clientX - startXRef.current;
+      const newWidth = Math.max(80, startWidthRef.current + delta);
+      setColumnWidths((prev) => ({ ...prev, [colId]: newWidth }));
+    };
+
+    const handleResizeUp = () => {
+      setResizingColumn(null);
+      window.removeEventListener("mousemove", handleResizeMove);
+      window.removeEventListener("mouseup", handleResizeUp);
+    };
+
+    window.addEventListener("mousemove", handleResizeMove);
+    window.addEventListener("mouseup", handleResizeUp);
+  };
+
+  const getColumnWidth = (colId, defaultWidth = 150) => {
+    return columnWidths[colId] || defaultWidth;
+  };
+
+  const sortByStatus = () => {
+    setActiveSort("status");
+  };
+
+  const sortBySalary = () => {
+    setActiveSort("salary");
+  };
+
+  const sortByDate = () => {
+    setActiveSort("date");
+    const sorted = [...rows].sort((a, b) => {
+      if (!a.appliedDate && !b.appliedDate) return 0;
+      if (!a.appliedDate) return 1;
+      if (!b.appliedDate) return -1;
+      return new Date(b.appliedDate) - new Date(a.appliedDate);
+    });
+    setRows(sorted);
+  };
+
   const dirtyCount = rows.filter((r) => r._isDirty).length;
-  const totalCols = 7 + columns.length + 1; // fixed cols + custom + actions
+  const totalCols = 7 + columns.length;
 
   return (
-    <div>
-      <nav>
-        <Link to="/">Home</Link>
-        {" | "}
-        <button onClick={handleLogout}>Logout</button>
-      </nav>
+    <div className="dashboard">
+      <Appbar
+        showNav={true}
+        rightActions={
+          <>
+            <button onClick={handleSettings} className="appbar-button">
+              Settings
+            </button>
+            <button onClick={handleLogout} className="appbar-button">
+              Logout
+            </button>
+          </>
+        }
+      />
 
-      <h1>
-        Welcome, {firstName} {lastName}
-      </h1>
+      <div className="dashboard__main">
+        {error && <div className="dashboard__error">{error}</div>}
 
-      {error && (
-        <p style={{ color: "red" }}>
-          <strong>Error:</strong> {error}
-        </p>
-      )}
+        {savedAt && !error && dirtyCount === 0 && (
+          <div className="dashboard__success">All changes saved</div>
+        )}
 
-      {savedAt && !error && (
-        <p style={{ color: "green" }}>Saved successfully.</p>
-      )}
-
-      <div
-        style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}
-      >
-        <button onClick={handleAddRow}>+ Add Row</button>
-        <button onClick={() => setShowAddField((v) => !v)}>+ Add Field</button>
-        <button onClick={handleSave} disabled={saving || dirtyCount === 0}>
-          {saving
-            ? "Saving…"
-            : dirtyCount > 0
-              ? `Save (${dirtyCount} unsaved)`
-              : "Save"}
-        </button>
-      </div>
-
-      {showAddField && (
-        <form
-          onSubmit={handleAddField}
-          style={{
-            display: "flex",
-            gap: 8,
-            marginBottom: 8,
-            alignItems: "center",
-          }}
-        >
-          <input
-            ref={newFieldInputRef}
-            placeholder="Field name"
-            value={newFieldName}
-            onChange={(e) => setNewFieldName(e.target.value)}
-          />
-          <button type="submit">Add</button>
-          <button type="button" onClick={() => setShowAddField(false)}>
-            Cancel
-          </button>
-        </form>
-      )}
-
-      {columns.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <strong>Custom fields: </strong>
-          {columns.map((col) => (
-            <span
-              key={col.id}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                marginRight: 8,
-                padding: "2px 6px",
-                border: "1px solid #ccc",
-                borderRadius: 4,
-              }}
-            >
-              {col.name}
-              <button
-                style={{
-                  cursor: "pointer",
-                  border: "none",
-                  background: "transparent",
-                  color: "red",
-                  fontWeight: "bold",
-                  lineHeight: 1,
-                }}
-                title={`Delete field "${col.name}"`}
-                onClick={() => handleDeleteColumn(col.id)}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+        <div className="dashboard-header">
+          <div>
+            <h1>Applications</h1>
+            <p>{rows.length} applications tracked</p>
+          </div>
         </div>
-      )}
 
-      <div style={{ overflowX: "auto" }}>
-        <table border="1" cellPadding="4">
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Date Applied</th>
-              <th>Salary</th>
-              <th>Link</th>
-              <th>Notes</th>
-              {columns.map((col) => (
-                <th key={col.id}>{col.name}</th>
-              ))}
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
+        <div className="dashboard__toolbar">
+          <button
+            className="toolbar-button toolbar-button--icon"
+            onClick={() => setShowAddFieldModal(true)}
+            title="Add custom field"
+          >
+            +
+          </button>
+          <div className="toolbar-divider" />
+          <button
+            className={`toolbar-button ${activeSort === "status" ? "toolbar-button--active" : ""}`}
+            onClick={sortByStatus}
+          >
+            By Status
+            <span className="sort-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 15 12 9 18 15" />
+              </svg>
+            </span>
+          </button>
+          <button
+            className={`toolbar-button ${activeSort === "salary" ? "toolbar-button--active" : ""}`}
+            onClick={sortBySalary}
+          >
+            By Salary
+            <span className="sort-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 15 12 9 18 15" />
+              </svg>
+            </span>
+          </button>
+          <button
+            className={`toolbar-button ${activeSort === "date" ? "toolbar-button--active" : ""}`}
+            onClick={sortByDate}
+          >
+            By Date
+            <span className="sort-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 15 12 9 18 15" />
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div
+          ref={tableContainerRef}
+          className="table-container"
+          style={{ cursor: "grab" }}
+        >
+          <table className="data-table">
+            <thead>
               <tr>
-                <td
-                  colSpan={totalCols}
-                  style={{ textAlign: "center", padding: 16 }}
+                <th
+                  style={{ width: getColumnWidth("company", 120) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "company", "Company")
+                  }
                 >
-                  No applications yet — click <strong>+ Add Row</strong> to
-                  start.
-                </td>
+                  <div className="resizable-header">
+                    Company
+                    <div
+                      className={`resizer ${resizingColumn === "company" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize(
+                          "company",
+                          getColumnWidth("company", 120),
+                          e,
+                        )
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("role", 120) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "role", "Role")
+                  }
+                >
+                  <div className="resizable-header">
+                    Role
+                    <div
+                      className={`resizer ${resizingColumn === "role" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize("role", getColumnWidth("role", 120), e)
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("status", 100) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "status", "Status")
+                  }
+                >
+                  <div className="resizable-header">
+                    Status
+                    <div
+                      className={`resizer ${resizingColumn === "status" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize("status", getColumnWidth("status", 100), e)
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("appliedDate", 110) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "appliedDate", "Date Applied")
+                  }
+                >
+                  <div className="resizable-header">
+                    Date Applied
+                    <div
+                      className={`resizer ${resizingColumn === "appliedDate" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize(
+                          "appliedDate",
+                          getColumnWidth("appliedDate", 110),
+                          e,
+                        )
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("salary", 100) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "salary", "Salary")
+                  }
+                >
+                  <div className="resizable-header">
+                    Salary
+                    <div
+                      className={`resizer ${resizingColumn === "salary" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize("salary", getColumnWidth("salary", 100), e)
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("link", 120) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "link", "Link")
+                  }
+                >
+                  <div className="resizable-header">
+                    Link
+                    <div
+                      className={`resizer ${resizingColumn === "link" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize("link", getColumnWidth("link", 120), e)
+                      }
+                    />
+                  </div>
+                </th>
+                <th
+                  style={{ width: getColumnWidth("notes", 150) }}
+                  onContextMenu={(e) =>
+                    handleColumnContextMenu(e, "notes", "Notes")
+                  }
+                >
+                  <div className="resizable-header">
+                    Notes
+                    <div
+                      className={`resizer ${resizingColumn === "notes" ? "resizing" : ""}`}
+                      onMouseDown={(e) =>
+                        startResize("notes", getColumnWidth("notes", 150), e)
+                      }
+                    />
+                  </div>
+                </th>
+                {columns.map((col) => (
+                  <th
+                    key={col.id}
+                    style={{ width: getColumnWidth(col.id, 120) }}
+                    onContextMenu={(e) =>
+                      handleColumnContextMenu(e, col.id, col.name)
+                    }
+                  >
+                    <div className="resizable-header">
+                      {col.name}
+                      <div
+                        className={`resizer ${resizingColumn === col.id ? "resizing" : ""}`}
+                        onMouseDown={(e) =>
+                          startResize(col.id, getColumnWidth(col.id, 120), e)
+                        }
+                      />
+                    </div>
+                  </th>
+                ))}
               </tr>
-            ) : (
-              rows.map((row) => (
+            </thead>
+            <tbody>
+              {rows.map((row) => (
                 <tr
                   key={row._tempId}
-                  style={row._isDirty ? { background: "#fffbe6" } : undefined}
+                  onContextMenu={(e) => handleRowContextMenu(e, row)}
                 >
                   <td>
                     <input
@@ -398,7 +700,7 @@ function DashboardPage() {
                   <td>
                     <input
                       value={row.salary}
-                      placeholder="Salary"
+                      placeholder="$"
                       onChange={(e) =>
                         handleCellChange(row._tempId, "salary", e.target.value)
                       }
@@ -407,7 +709,7 @@ function DashboardPage() {
                   <td>
                     <input
                       value={row.link}
-                      placeholder="https://…"
+                      placeholder="Link"
                       onChange={(e) =>
                         handleCellChange(row._tempId, "link", e.target.value)
                       }
@@ -427,6 +729,7 @@ function DashboardPage() {
                     <td key={col.id}>
                       <input
                         value={row.customValues?.[col.id] ?? ""}
+                        placeholder={col.name}
                         onChange={(e) =>
                           handleCustomValueChange(
                             row._tempId,
@@ -437,15 +740,140 @@ function DashboardPage() {
                       />
                     </td>
                   ))}
-                  <td>
-                    <button onClick={() => handleDeleteRow(row)}>Delete</button>
-                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+              <tr>
+                <td className="add-row-cell" colSpan={totalCols}>
+                  <button className="add-row-button" onClick={handleAddRow}>
+                    +
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{
+            position: "fixed",
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 1001,
+          }}
+        >
+          {contextMenu.columnId && (
+            <div
+              className="context-menu-item"
+              onClick={() => {
+                handleDeleteColumn(contextMenu.columnId);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Delete column "{contextMenu.columnName}"
+            </div>
+          )}
+          {contextMenu.row && (
+            <div
+              className="context-menu-item"
+              onClick={() => {
+                handleDeleteRow(contextMenu.row);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Delete row
+            </div>
+          )}
+        </div>
+      )}
+
+      {showAddFieldModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowAddFieldModal(false)}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__header">
+              <h3>Add custom field</h3>
+            </div>
+            <div className="modal__body">
+              <input
+                ref={newFieldInputRef}
+                type="text"
+                placeholder="Field name (e.g., 'Recruiter', 'Location')"
+                value={newFieldName}
+                onChange={(e) => setNewFieldName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddField();
+                  }
+                }}
+              />
+            </div>
+            <div className="modal__footer">
+              <button
+                className="modal__button modal__button--cancel"
+                onClick={() => {
+                  setShowAddFieldModal(false);
+                  setNewFieldName("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal__button modal__button--save"
+                onClick={handleAddField}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setShowDeleteModal(false);
+            setDeleteTarget(null);
+          }}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__header">
+              <h3>Confirm Delete</h3>
+            </div>
+            <div className="modal__body">
+              <p>Are you sure you want to delete this {deleteTarget?.type}?</p>
+              {deleteTarget?.type === "column" && (
+                <p style={{ color: "#e03e3e", marginTop: "0.5rem" }}>
+                  This will permanently delete the column and all its values.
+                </p>
+              )}
+            </div>
+            <div className="modal__footer">
+              <button
+                className="modal__button modal__button--cancel"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteTarget(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal__button modal__button--save"
+                onClick={confirmDelete}
+                style={{ background: "#e03e3e", color: "white" }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

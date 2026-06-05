@@ -1,0 +1,26 @@
+.db-header {
+  padding: 2rem 0 1rem;
+}
+
+.db-header__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0a0a0a;
+}
+
+.db-header__count {
+  margin: 0.375rem 0 0;
+  color: #737373;
+  font-size: 0.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .db-header__title {
+    color: #fafafa;
+  }
+  .db-header__count {
+    color: #a3a3a3;
+  }
+}

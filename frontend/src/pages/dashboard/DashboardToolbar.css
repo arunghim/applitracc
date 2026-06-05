@@ -1,0 +1,88 @@
+.db-toolbar {
+  padding: 0.5rem 0;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  border-bottom: 1px solid #e5e5e5;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  margin-bottom: 0.5rem;
+}
+
+.db-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.db-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  background: transparent;
+  border: none;
+  color: #737373;
+  font-size: 0.813rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+
+.db-toolbar__btn:hover {
+  background: #f5f5f5;
+  color: #0a0a0a;
+}
+
+.db-toolbar__btn--icon {
+  padding: 0.375rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.db-toolbar__btn--active {
+  background: #f5f5f5;
+  color: #0a0a0a;
+}
+
+.db-toolbar__divider {
+  width: 1px;
+  height: 18px;
+  background: #e5e5e5;
+  margin: 0 0.125rem;
+  flex-shrink: 0;
+}
+
+.db-toolbar__sort-icon {
+  display: inline-flex;
+  opacity: 0.5;
+}
+
+.db-toolbar__sort-icon svg {
+  width: 10px;
+  height: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .db-toolbar {
+    border-bottom-color: #262626;
+  }
+  .db-toolbar__btn {
+    color: #a3a3a3;
+  }
+  .db-toolbar__btn:hover {
+    background: #1a1a1a;
+    color: #fafafa;
+  }
+  .db-toolbar__btn--active {
+    background: #1a1a1a;
+    color: #fafafa;
+  }
+  .db-toolbar__divider {
+    background: #262626;
+  }
+}

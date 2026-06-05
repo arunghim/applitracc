@@ -1,0 +1,283 @@
+.at-container {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+  margin-top: 0.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.5rem;
+}
+
+.at-container::-webkit-scrollbar {
+  display: none;
+}
+
+.at-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.at-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.at-table th,
+.at-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+  border-right: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+
+.at-table td:last-child,
+.at-table th:last-child {
+  border-right: none;
+}
+
+.at-table th {
+  background: #fafafa;
+  font-weight: 500;
+  color: #737373;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.at-resizable-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.at-resizer {
+  position: absolute;
+  right: -4px;
+  top: 0;
+  height: 100%;
+  width: 8px;
+  background: transparent;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 20;
+}
+
+.at-resizer:hover,
+.at-resizer--active {
+  background: #d4d4d4;
+}
+
+/* Inputs / selects / textareas inside cells */
+.at-table input,
+.at-table select,
+.at-table textarea {
+  width: 100%;
+  min-width: 90px;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #0a0a0a;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.at-table textarea {
+  min-width: 140px;
+  resize: vertical;
+}
+
+.at-table input:hover,
+.at-table select:hover,
+.at-table textarea:hover {
+  background: #f5f5f5;
+}
+
+.at-table input:focus,
+.at-table select:focus,
+.at-table textarea:focus {
+  background: #ffffff;
+  border-color: #d4d4d4;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.06);
+}
+
+.at-table input::placeholder,
+.at-table textarea::placeholder {
+  color: #d4d4d4;
+}
+
+/* Status select colour coding */
+.at-table select {
+  appearance: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  min-width: 80px;
+}
+
+.at-table select.status--saved {
+  background: #f5f5f5;
+  color: #737373;
+  border-color: #e5e5e5;
+}
+.at-table select.status--applied {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.at-table select.status--interview {
+  background: #fefce8;
+  color: #a16207;
+  border-color: #fde68a;
+}
+.at-table select.status--offer {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.at-table select.status--accepted {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #86efac;
+}
+.at-table select.status--rejected {
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+}
+
+/* Add-row footer */
+.at-add-row-cell {
+  padding: 0.5rem 0.75rem !important;
+  text-align: left !important;
+  border-bottom: none !important;
+}
+
+.at-add-row-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 2rem;
+  padding: 0 0.625rem;
+  border-radius: 0.375rem;
+  background: transparent;
+  border: none;
+  color: #737373;
+  cursor: pointer;
+  font-size: 0.813rem;
+  font-weight: 500;
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.at-add-row-btn:hover {
+  background: #f5f5f5;
+  color: #0a0a0a;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .at-container {
+    border-color: #262626;
+  }
+
+  .at-table th,
+  .at-table td {
+    border-bottom-color: #262626;
+    border-right-color: #1a1a1a;
+  }
+
+  .at-table th {
+    background: #111111;
+    color: #a3a3a3;
+  }
+
+  .at-resizer:hover,
+  .at-resizer--active {
+    background: #404040;
+  }
+
+  .at-table input,
+  .at-table select,
+  .at-table textarea {
+    color: #fafafa;
+  }
+
+  .at-table input:hover,
+  .at-table select:hover,
+  .at-table textarea:hover {
+    background: #1a1a1a;
+  }
+
+  .at-table input:focus,
+  .at-table select:focus,
+  .at-table textarea:focus {
+    background: #111111;
+    border-color: #404040;
+    box-shadow: 0 0 0 3px rgba(250, 250, 250, 0.06);
+  }
+
+  .at-table input::placeholder,
+  .at-table textarea::placeholder {
+    color: #404040;
+  }
+
+  .at-table select.status--saved {
+    background: #1a1a1a;
+    color: #a3a3a3;
+    border-color: #333;
+  }
+  .at-table select.status--applied {
+    background: #1e3a5f;
+    color: #93c5fd;
+    border-color: #2563eb;
+  }
+  .at-table select.status--interview {
+    background: #3d2a00;
+    color: #fcd34d;
+    border-color: #d97706;
+  }
+  .at-table select.status--offer {
+    background: #052e16;
+    color: #86efac;
+    border-color: #16a34a;
+  }
+  .at-table select.status--accepted {
+    background: #052e16;
+    color: #4ade80;
+    border-color: #15803d;
+  }
+  .at-table select.status--rejected {
+    background: #3b0a18;
+    color: #fda4af;
+    border-color: #e11d48;
+  }
+
+  .at-add-row-btn {
+    color: #a3a3a3;
+  }
+
+  .at-add-row-btn:hover {
+    background: #1a1a1a;
+    color: #fafafa;
+  }
+}

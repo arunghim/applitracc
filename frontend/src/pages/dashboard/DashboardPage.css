@@ -62,15 +62,20 @@
   font-weight: 450;
 }
 
-.dp__success {
-  margin: 0.75rem 0;
-  padding: 0.65rem 0.875rem;
+.dp__toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 2000;
+  padding: 0.6rem 1rem;
   border-radius: 0.5rem;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
   color: #15803d;
   font-size: 0.875rem;
-  font-weight: 450;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -106,7 +111,7 @@
     color: #fca5a5;
   }
 
-  .dp__success {
+  .dp__toast {
     background: #052e16;
     border-color: #166534;
     color: #86efac;

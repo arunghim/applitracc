@@ -344,12 +344,12 @@ function DashboardPage() {
         }
       />
 
+      {savedAt && !error && dirtyCount === 0 && (
+        <div className="dp__toast">All changes saved</div>
+      )}
+
       <div className="dp__main">
         {error && <div className="dp__error">{error}</div>}
-
-        {savedAt && !error && dirtyCount === 0 && (
-          <div className="dp__success">All changes saved</div>
-        )}
 
         <DashboardHeader rowCount={rows.length} />
 

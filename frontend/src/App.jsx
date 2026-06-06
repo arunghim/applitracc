@@ -4,6 +4,7 @@ import StatusPage from "./pages/status/StatusPage";
 import LoginPage from "./pages/login/LoginPage";
 import SignupPage from "./pages/signup/SignupPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route } from "react-router";
 
@@ -19,6 +20,14 @@ function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

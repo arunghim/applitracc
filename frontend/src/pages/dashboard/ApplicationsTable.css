@@ -4,8 +4,6 @@
   overflow-y: auto;
   position: relative;
   margin-top: 0.5rem;
-  border: 1px solid #e5e5e5;
-  border-radius: 0.5rem;
 }
 
 .at-container::-webkit-scrollbar {
@@ -36,6 +34,15 @@
 .at-table td:last-child,
 .at-table th:last-child {
   border-right: none;
+}
+
+.at-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.at-table th:first-child,
+.at-table td:first-child {
+  border-left: none;
 }
 
 .at-table th {
@@ -197,7 +204,7 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .at-container {
-    border-color: #262626;
+    border-color: transparent;
   }
 
   .at-table th,

@@ -11,6 +11,7 @@ import com.applitrack.backend.api.ApiResponse;
 import com.applitrack.backend.api.ErrorCode;
 import com.applitrack.backend.dto.AppUserAuthDto;
 import com.applitrack.backend.dto.AppUserLoginResponseDto;
+import com.applitrack.backend.dto.RefreshTokenRequestDto;
 import com.applitrack.backend.service.AuthService;
 
 @RestController
@@ -41,5 +42,18 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AppUserLoginResponseDto>> refresh(
+            @RequestBody RefreshTokenRequestDto request) {
+        AppUserLoginResponseDto response = authService.refreshAccessToken(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@RequestBody RefreshTokenRequestDto request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
     }
 }

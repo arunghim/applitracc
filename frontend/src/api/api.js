@@ -1,11 +1,50 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
 
-async function request(path, options = {}) {
+let refreshPromise = null;
+
+async function request(path, options = {}, isRetry = false) {
   const { headers: optHeaders, ...restOptions } = options;
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json", ...optHeaders },
     ...restOptions,
   });
+
+  if (
+    response.status === 401 &&
+    !isRetry &&
+    path !== "/auth/login" &&
+    path !== "/auth/refresh"
+  ) {
+    const storedRefreshToken = localStorage.getItem("refreshToken");
+    if (!storedRefreshToken) {
+      clearAuth();
+      window.location.href = "/login";
+      throw new Error("Session expired");
+    }
+
+    if (!refreshPromise) {
+      refreshPromise = silentRefresh(storedRefreshToken).finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    try {
+      await refreshPromise;
+    } catch {
+      clearAuth();
+      window.location.href = "/login";
+      throw new Error("Session expired");
+    }
+
+    const retryOptions = {
+      ...options,
+      headers: {
+        ...optHeaders,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    };
+    return request(path, retryOptions, true);
+  }
 
   if (!response.ok) {
     const text = await response.text();
@@ -16,6 +55,26 @@ async function request(path, options = {}) {
   return contentType.includes("application/json")
     ? response.json()
     : response.text();
+}
+
+async function silentRefresh(refreshToken) {
+  const res = await request(
+    "/auth/refresh",
+    {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+    },
+    true,
+  );
+  localStorage.setItem("token", res.data.token);
+  localStorage.setItem("refreshToken", res.data.refreshToken);
+}
+
+function clearAuth() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("firstName");
+  localStorage.removeItem("lastName");
 }
 
 export const getHealth = () => request("/health");
@@ -31,11 +90,27 @@ export const login = async (email, password) => {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  const { token, firstName, lastName } = res.data;
+  const { token, refreshToken, firstName, lastName } = res.data;
   localStorage.setItem("token", token);
+  localStorage.setItem("refreshToken", refreshToken);
   localStorage.setItem("firstName", firstName);
   localStorage.setItem("lastName", lastName);
   return res;
+};
+
+export const logout = async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (refreshToken) {
+    try {
+      await request("/auth/logout", {
+        method: "POST",
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch {
+      // clear locally regardless of server response
+    }
+  }
+  clearAuth();
 };
 
 const authHeaders = () => ({

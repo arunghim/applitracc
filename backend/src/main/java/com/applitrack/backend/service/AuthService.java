@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.applitrack.backend.dto.AppUserAuthDto;
 import com.applitrack.backend.dto.AppUserLoginResponseDto;
 import com.applitrack.backend.model.AppUser;
+import com.applitrack.backend.model.RefreshToken;
 
 @Service
 public class AuthService {
@@ -13,11 +14,14 @@ public class AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserService userService, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public AuthService(UserService userService, JwtService jwtService, PasswordEncoder passwordEncoder,
+            RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public String registerAppUser(AppUserAuthDto appUserAuthDto) {
@@ -42,14 +46,31 @@ public class AuthService {
         try {
             appUser = userService.getUserByEmail(appUserAuthDto.getEmail());
         } catch (Exception e) {
-            return new AppUserLoginResponseDto(null, null, null, null);
+            return new AppUserLoginResponseDto(null, null, null, null, null);
         }
 
         if (!passwordEncoder.matches(appUserAuthDto.getPassword(), appUser.getPassword())) {
-            return new AppUserLoginResponseDto(null, null, null, null);
+            return new AppUserLoginResponseDto(null, null, null, null, null);
         }
 
-        String token = jwtService.generateToken(appUser.getEmail());
-        return new AppUserLoginResponseDto(token, appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
+        String accessToken = jwtService.generateToken(appUser.getEmail());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(appUser.getId());
+        return new AppUserLoginResponseDto(accessToken, refreshToken.getToken(),
+                appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
+    }
+
+    public AppUserLoginResponseDto refreshAccessToken(String refreshTokenStr) {
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(refreshTokenStr);
+        AppUser user = refreshToken.getUser();
+
+        // Rotate: creates new token and revokes the old one
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
+        String newAccessToken = jwtService.generateToken(user.getEmail());
+        return new AppUserLoginResponseDto(newAccessToken, newRefreshToken.getToken(),
+                user.getEmail(), user.getFirstName(), user.getLastName());
+    }
+
+    public void logout(String refreshTokenStr) {
+        refreshTokenService.revokeToken(refreshTokenStr);
     }
 }

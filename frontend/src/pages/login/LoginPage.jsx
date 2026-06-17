@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { login } from "../../api/api";
 import Appbar from "../../components/Appbar";
 import "./LoginPage.css";
@@ -13,6 +13,10 @@ function LoginPage() {
   useEffect(() => {
     document.title = "Login | Applitrack";
   }, []);
+
+  if (localStorage.getItem("refreshToken")) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();

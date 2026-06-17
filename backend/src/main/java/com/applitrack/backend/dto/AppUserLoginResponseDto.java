@@ -3,6 +3,7 @@ package com.applitrack.backend.dto;
 public class AppUserLoginResponseDto {
 
     private String token;
+    private String refreshToken;
     private String email;
     private String firstName;
     private String lastName;
@@ -10,8 +11,9 @@ public class AppUserLoginResponseDto {
     public AppUserLoginResponseDto() {
     }
 
-    public AppUserLoginResponseDto(String token, String email, String firstName, String lastName) {
+    public AppUserLoginResponseDto(String token, String refreshToken, String email, String firstName, String lastName) {
         this.token = token;
+        this.refreshToken = refreshToken;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -23,6 +25,14 @@ public class AppUserLoginResponseDto {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getEmail() {

@@ -90,7 +90,7 @@ function SettingsPage() {
     firstName || lastName ? `${firstName} ${lastName}`.trim() : "Unnamed";
 
   useEffect(() => {
-    document.title = "Settings | Applitrack";
+    document.title = "Settings | Applitracc";
   }, []);
 
   useEffect(() => {

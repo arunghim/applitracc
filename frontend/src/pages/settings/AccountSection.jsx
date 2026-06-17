@@ -42,7 +42,7 @@ function AccountSection() {
         <div className="settings__row-meta">
           <span className="settings__row-label">Email</span>
           <span className="settings__row-desc">
-            Used to sign in to Applitrack.
+            Used to sign in to Applitracc.
           </span>
         </div>
         <div className="settings__row-control">

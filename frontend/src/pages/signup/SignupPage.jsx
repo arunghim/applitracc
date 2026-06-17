@@ -15,7 +15,7 @@ function SignupPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    document.title = "Sign Up | Applitrack";
+    document.title = "Sign Up | Applitracc";
   }, []);
 
   if (localStorage.getItem("refreshToken")) {

@@ -6,7 +6,7 @@ function Appbar({ showNav = true, rightActions }) {
     <div className="ab">
       <Link to="/" className="ab__brand">
         <img src="/favicon.svg" alt="" className="ab__brand-icon" />
-        Applitrack
+        Applitracc
       </Link>
       {rightActions ? (
         <div className="ab__nav">{rightActions}</div>

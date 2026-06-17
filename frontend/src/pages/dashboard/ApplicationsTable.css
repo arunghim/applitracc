@@ -161,7 +161,6 @@
   border-left: 2px solid #93c5fd;
 }
 
-/* Inputs / selects / textareas inside cells */
 .at-table input,
 .at-table select,
 .at-table textarea {
@@ -214,7 +213,6 @@
   color: #d4d4d4;
 }
 
-/* Status select colour coding */
 .at-table select {
   appearance: none;
   cursor: pointer;
@@ -258,7 +256,6 @@
   border-color: #fecdd3;
 }
 
-/* Add-row footer */
 .at-add-row-cell {
   padding: 0.5rem 0.75rem !important;
   text-align: left !important;
@@ -289,7 +286,6 @@
   color: #0a0a0a;
 }
 
-/* Dark mode */
 @media (prefers-color-scheme: dark) {
   .at-container {
     border-color: #262626;

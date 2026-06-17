@@ -1,5 +1,5 @@
 # ┌─────────────────────────────────────────────────────────────────────────────┐
-# │  applitrack — Makefile command reference                                    │
+# │  applitracc — Makefile command reference                                    │
 # │                                                                             │
 # │  RUN                                                                        │
 # │    make up                Start all services (db + backend + frontend)      │

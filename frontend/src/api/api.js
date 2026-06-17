@@ -109,7 +109,7 @@ export const logout = async () => {
         body: JSON.stringify({ refreshToken }),
       });
     } catch {
-      // clear locally regardless of server response
+      // logout is best-effort; ignore errors
     }
   }
   clearAuth();

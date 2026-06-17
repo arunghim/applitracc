@@ -1,4 +1,4 @@
-/* First + Last name side-by-side on wider screens */
+
 .signup__name-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

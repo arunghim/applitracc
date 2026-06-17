@@ -5,7 +5,7 @@ import "./HomePage.css";
 
 function HomePage() {
   useEffect(() => {
-    document.title = "Applitrack";
+    document.title = "Applitracc";
   }, []);
 
   if (localStorage.getItem("refreshToken")) {

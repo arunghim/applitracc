@@ -74,7 +74,7 @@ function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Dashboard | Applitrack";
+    document.title = "Dashboard | Applitracc";
   }, []);
 
   const [rows, setRows] = useState([]);
@@ -290,7 +290,7 @@ function DashboardPage() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [rows]);
 
   function sortByStatus() {

@@ -28,7 +28,7 @@ function AppearanceSection({ theme, setTheme }) {
         <div className="settings__row-meta">
           <span className="settings__row-label">Interface theme</span>
           <span className="settings__row-desc">
-            Customise how Applitrack looks on this device.
+            Customise how Applitracc looks on this device.
           </span>
         </div>
         <div className="settings__theme-grid">

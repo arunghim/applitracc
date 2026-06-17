@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate } from "react-router";
+import { Link, Navigate } from "react-router";
 import Appbar from "../../components/Appbar";
 import "./HomePage.css";
 
@@ -15,6 +15,24 @@ function HomePage() {
   return (
     <div className="hp">
       <Appbar />
+      <div className="hp__body">
+        <div className="hp__hero">
+          <h1 className="hp__hero-title">
+            Track every application,
+            <br />
+            land your next role.
+          </h1>
+          <p className="hp__hero-sub">
+            Stop juggling spreadsheets. Track applications, interviews, notes,
+            and deadlines in one streamlined workspace.
+          </p>
+          <div className="hp__hero-actions">
+            <Link to="/signup" className="hp__btn-primary">
+              Get Started
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

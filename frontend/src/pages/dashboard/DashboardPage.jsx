@@ -8,6 +8,7 @@ import {
   getColumns,
   addColumn,
   deleteColumn,
+  logout,
 } from "../../api/api";
 import Appbar from "../../components/Appbar";
 import DashboardHeader from "./DashboardHeader";
@@ -83,8 +84,14 @@ function DashboardPage() {
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [newFieldName, setNewFieldName] = useState("");
   const [activeSort, setActiveSort] = useState(null);
+  const [sortDirs, setSortDirs] = useState({
+    status: "asc",
+    salary: "desc",
+    date: "desc",
+  });
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -124,10 +131,12 @@ function DashboardPage() {
   }
 
   function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("firstName");
-    localStorage.removeItem("lastName");
-    navigate("/");
+    setShowLogoutModal(true);
+  }
+
+  async function confirmLogout() {
+    await logout();
+    navigate("/login");
   }
 
   function handleSettings() {
@@ -293,33 +302,44 @@ function DashboardPage() {
       "ACCEPTED",
       "REJECTED",
     ];
+    const nextDir =
+      activeSort === "status" && sortDirs.status === "asc" ? "desc" : "asc";
+    setSortDirs((prev) => ({ ...prev, status: nextDir }));
     setActiveSort("status");
     setRows((prev) =>
-      [...prev].sort(
-        (a, b) => order.indexOf(a.status) - order.indexOf(b.status),
-      ),
+      [...prev].sort((a, b) => {
+        const diff = order.indexOf(a.status) - order.indexOf(b.status);
+        return nextDir === "asc" ? diff : -diff;
+      }),
     );
   }
 
   function sortBySalary() {
+    const nextDir =
+      activeSort === "salary" && sortDirs.salary === "desc" ? "asc" : "desc";
+    setSortDirs((prev) => ({ ...prev, salary: nextDir }));
     setActiveSort("salary");
     setRows((prev) =>
       [...prev].sort((a, b) => {
         const numA = parseFloat(a.salary.replace(/[^0-9.]/g, "")) || 0;
         const numB = parseFloat(b.salary.replace(/[^0-9.]/g, "")) || 0;
-        return numB - numA;
+        return nextDir === "desc" ? numB - numA : numA - numB;
       }),
     );
   }
 
   function sortByDate() {
+    const nextDir =
+      activeSort === "date" && sortDirs.date === "desc" ? "asc" : "desc";
+    setSortDirs((prev) => ({ ...prev, date: nextDir }));
     setActiveSort("date");
     setRows((prev) =>
       [...prev].sort((a, b) => {
         if (!a.appliedDate && !b.appliedDate) return 0;
         if (!a.appliedDate) return 1;
         if (!b.appliedDate) return -1;
-        return new Date(b.appliedDate) - new Date(a.appliedDate);
+        const diff = new Date(b.appliedDate) - new Date(a.appliedDate);
+        return nextDir === "desc" ? diff : -diff;
       }),
     );
   }
@@ -355,6 +375,7 @@ function DashboardPage() {
 
         <DashboardToolbar
           activeSort={activeSort}
+          sortDirs={sortDirs}
           onAddField={() => setShowAddFieldModal(true)}
           onSortStatus={sortByStatus}
           onSortSalary={sortBySalary}
@@ -399,6 +420,38 @@ function DashboardPage() {
           setDeleteTarget(null);
         }}
       />
+
+      {showLogoutModal && (
+        <div className="dcm-overlay" onClick={() => setShowLogoutModal(false)}>
+          <div className="dcm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="dcm-modal__header">
+              <h3 className="dcm-modal__title">Log out</h3>
+              <p className="dcm-modal__desc">
+                You will be returned to the login page.
+              </p>
+            </div>
+            <div className="dcm-modal__body">
+              <p className="dcm-modal__message">
+                Any unsaved changes will be lost. Are you sure?
+              </p>
+            </div>
+            <div className="dcm-modal__footer">
+              <button
+                className="dcm-modal__btn dcm-modal__btn--cancel"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="dcm-modal__btn dcm-modal__btn--delete"
+                onClick={confirmLogout}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

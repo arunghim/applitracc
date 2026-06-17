@@ -73,6 +73,7 @@ async function silentRefresh(refreshToken) {
 function clearAuth() {
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("email");
   localStorage.removeItem("firstName");
   localStorage.removeItem("lastName");
 }
@@ -93,6 +94,7 @@ export const login = async (email, password) => {
   const { token, refreshToken, firstName, lastName } = res.data;
   localStorage.setItem("token", token);
   localStorage.setItem("refreshToken", refreshToken);
+  localStorage.setItem("email", email);
   localStorage.setItem("firstName", firstName);
   localStorage.setItem("lastName", lastName);
   return res;

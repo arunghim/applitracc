@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { login } from "../../api/api";
-import Appbar from "../../components/Appbar";
-import "./LoginPage.css";
+import AuthLayout from "../../components/AuthLayout";
+import FormField from "../../components/FormField";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -30,59 +30,47 @@ function LoginPage() {
   }
 
   return (
-    <div className="lp">
-      <Appbar showNav={false} />
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to your account to continue."
+      footer={
+        <>
+          Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+        </>
+      }
+    >
+      {error && <p className="auth-error">{error}</p>}
 
-      {/* Centred form */}
-      <div className="lp__body">
-        <div className="lp__card">
-          <h1 className="lp__heading">Welcome back</h1>
-          <p className="lp__sub">Sign in to your account to continue.</p>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <FormField id="email" label="Email">
+          <input
+            className="auth-input"
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </FormField>
 
-          {error && <p className="lp__error">{error}</p>}
+        <FormField id="password" label="Password">
+          <input
+            className="auth-input"
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </FormField>
 
-          <form className="lp__form" onSubmit={handleSubmit}>
-            <div className="lp__field">
-              <label className="lp__label" htmlFor="email">
-                Email
-              </label>
-              <input
-                className="lp__input"
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="lp__field">
-              <label className="lp__label" htmlFor="password">
-                Password
-              </label>
-              <input
-                className="lp__input"
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <button className="lp__submit" type="submit">
-              Sign in
-            </button>
-          </form>
-
-          <p className="lp__footer">
-            Don&apos;t have an account? <Link to="/signup">Sign up</Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        <button className="auth-btn" type="submit">
+          Sign in
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
 

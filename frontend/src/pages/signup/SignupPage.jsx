@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { register } from "../../api/api";
-import Appbar from "../../components/Appbar";
+import AuthLayout from "../../components/AuthLayout";
+import FormField from "../../components/FormField";
 import "./SignupPage.css";
 
 function SignupPage() {
@@ -14,8 +15,12 @@ function SignupPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    document.title = "Sign Up";
+    document.title = "Sign Up | Applitrack";
   }, []);
+
+  if (localStorage.getItem("refreshToken")) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,108 +38,84 @@ function SignupPage() {
   }
 
   return (
-    <div className="sp">
-      <Appbar showNav={false} />
+    <AuthLayout
+      title="Create an account"
+      subtitle="Start tracking your job applications."
+      footer={
+        <>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </>
+      }
+    >
+      {error && <p className="auth-error">{error}</p>}
 
-      <div className="sp__body">
-        <div className="sp__card">
-          <div className="sp__card-header">
-            <h1 className="sp__card-title">Create an account</h1>
-            <p className="sp__card-desc">
-              Start tracking your job applications.
-            </p>
-          </div>
-
-          <div className="sp__card-content">
-            {error && <p className="sp__error">{error}</p>}
-
-            <form className="sp__form" onSubmit={handleSubmit}>
-              <div className="sp__field">
-                <label className="sp__label" htmlFor="firstName">
-                  First name
-                </label>
-                <input
-                  className="sp__input"
-                  id="firstName"
-                  type="text"
-                  placeholder="Jane"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="sp__field">
-                <label className="sp__label" htmlFor="lastName">
-                  Last name
-                </label>
-                <input
-                  className="sp__input"
-                  id="lastName"
-                  type="text"
-                  placeholder="Doe"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="sp__field">
-                <label className="sp__label" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  className="sp__input"
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="sp__field">
-                <label className="sp__label" htmlFor="password">
-                  Password
-                </label>
-                <input
-                  className="sp__input"
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="sp__field">
-                <label className="sp__label" htmlFor="confirmPassword">
-                  Confirm password
-                </label>
-                <input
-                  className="sp__input"
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="sp__field">
-                <button className="sp__submit" type="submit">
-                  Create account
-                </button>
-                <p className="sp__field-desc">
-                  Already have an account? <Link to="/login">Sign in</Link>
-                </p>
-              </div>
-            </form>
-          </div>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="signup__name-row">
+          <FormField id="firstName" label="First name">
+            <input
+              className="auth-input"
+              id="firstName"
+              type="text"
+              placeholder="Jane"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField id="lastName" label="Last name">
+            <input
+              className="auth-input"
+              id="lastName"
+              type="text"
+              placeholder="Doe"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </FormField>
         </div>
-      </div>
-    </div>
+
+        <FormField id="email" label="Email">
+          <input
+            className="auth-input"
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </FormField>
+
+        <FormField id="password" label="Password">
+          <input
+            className="auth-input"
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </FormField>
+
+        <FormField id="confirmPassword" label="Confirm password">
+          <input
+            className="auth-input"
+            id="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </FormField>
+
+        <button className="auth-btn" type="submit">
+          Create account
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
 

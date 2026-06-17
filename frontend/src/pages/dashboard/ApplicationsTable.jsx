@@ -35,6 +35,32 @@ function ApplicationsTable({
 
   const [columnWidths, setColumnWidths] = useState({});
   const [resizingColumn, setResizingColumn] = useState(null);
+  const [rowHeights, setRowHeights] = useState({});
+  const DEFAULT_ROW_HEIGHT = 41;
+
+  const startRowResize = (tempId, startHeight, e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const handleMove = (moveEvent) => {
+      const delta = moveEvent.clientY - startY;
+      const newHeight = startHeight + delta;
+      if (newHeight <= DEFAULT_ROW_HEIGHT) {
+        setRowHeights((prev) => {
+          const next = { ...prev };
+          delete next[tempId];
+          return next;
+        });
+      } else {
+        setRowHeights((prev) => ({ ...prev, [tempId]: newHeight }));
+      }
+    };
+    const handleUp = () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+  };
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
@@ -64,6 +90,7 @@ function ApplicationsTable({
   const handleMouseDown = (e) => {
     if (
       e.target.classList?.contains("at-resizer") ||
+      e.target.classList?.contains("at-cell-expander") ||
       e.target.tagName === "INPUT" ||
       e.target.tagName === "SELECT" ||
       e.target.tagName === "TEXTAREA" ||
@@ -162,9 +189,22 @@ function ApplicationsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, idx) => (
             <tr
               key={row._tempId}
+              className={[
+                "at-data-row",
+                row._isDirty ? "at-row--dirty" : "",
+                idx % 2 === 1 ? "at-row--even" : "",
+                rowHeights[row._tempId] ? "at-row--expanded" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                rowHeights[row._tempId]
+                  ? { height: rowHeights[row._tempId] }
+                  : {}
+              }
               onContextMenu={(e) => onContextMenuRow(e, row)}
             >
               <td>
@@ -227,7 +267,7 @@ function ApplicationsTable({
                   }
                 />
               </td>
-              <td>
+              <td style={{ position: "relative" }}>
                 <textarea
                   value={row.notes}
                   placeholder="Notes"
@@ -235,15 +275,43 @@ function ApplicationsTable({
                   onChange={(e) =>
                     onCellChange(row._tempId, "notes", e.target.value)
                   }
+                  style={
+                    rowHeights[row._tempId]
+                      ? {
+                          height: `${rowHeights[row._tempId] - 20}px`,
+                          overflowY: "auto",
+                        }
+                      : {}
+                  }
+                />
+                <div
+                  className="at-cell-expander"
+                  onMouseDown={(e) =>
+                    startRowResize(
+                      row._tempId,
+                      rowHeights[row._tempId] || DEFAULT_ROW_HEIGHT,
+                      e,
+                    )
+                  }
                 />
               </td>
               {columns.map((col) => (
-                <td key={col.id}>
+                <td key={col.id} style={{ position: "relative" }}>
                   <input
                     value={row.customValues?.[col.id] ?? ""}
                     placeholder={col.name}
                     onChange={(e) =>
                       onCustomValueChange(row._tempId, col.id, e.target.value)
+                    }
+                  />
+                  <div
+                    className="at-cell-expander"
+                    onMouseDown={(e) =>
+                      startRowResize(
+                        row._tempId,
+                        rowHeights[row._tempId] || DEFAULT_ROW_HEIGHT,
+                        e,
+                      )
                     }
                   />
                 </td>

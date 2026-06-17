@@ -1,6 +1,7 @@
 import "./DashboardToolbar.css";
 
-function SortIcon() {
+function SortIcon({ direction = "desc" }) {
+  const points = direction === "asc" ? "6 9 12 15 18 9" : "6 15 12 9 18 15";
   return (
     <span className="db-toolbar__sort-icon">
       <svg
@@ -9,7 +10,7 @@ function SortIcon() {
         stroke="currentColor"
         strokeWidth="2"
       >
-        <polyline points="6 15 12 9 18 15" />
+        <polyline points={points} />
       </svg>
     </span>
   );
@@ -17,6 +18,7 @@ function SortIcon() {
 
 function DashboardToolbar({
   activeSort,
+  sortDirs = {},
   onAddField,
   onSortStatus,
   onSortSalary,
@@ -37,21 +39,25 @@ function DashboardToolbar({
         onClick={onSortStatus}
       >
         By Status
-        <SortIcon />
+        <SortIcon
+          direction={activeSort === "status" ? sortDirs.status : "asc"}
+        />
       </button>
       <button
         className={`db-toolbar__btn${activeSort === "salary" ? " db-toolbar__btn--active" : ""}`}
         onClick={onSortSalary}
       >
         By Salary
-        <SortIcon />
+        <SortIcon
+          direction={activeSort === "salary" ? sortDirs.salary : "desc"}
+        />
       </button>
       <button
         className={`db-toolbar__btn${activeSort === "date" ? " db-toolbar__btn--active" : ""}`}
         onClick={onSortDate}
       >
         By Date
-        <SortIcon />
+        <SortIcon direction={activeSort === "date" ? sortDirs.date : "desc"} />
       </button>
     </div>
   );

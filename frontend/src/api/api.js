@@ -1,11 +1,22 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
 
+// Access token lives in module memory — not localStorage — so XSS cannot read it.
+// It is lost on page refresh; the silent-refresh flow re-populates it on the
+// first 401 from any protected endpoint (the HttpOnly refresh-token cookie is
+// sent automatically by the browser).
+let _accessToken = null;
+
 let refreshPromise = null;
 
 async function request(path, options = {}, isRetry = false) {
   const { headers: optHeaders, ...restOptions } = options;
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...optHeaders },
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
+      ...optHeaders,
+    },
     ...restOptions,
   });
 
@@ -15,15 +26,8 @@ async function request(path, options = {}, isRetry = false) {
     path !== "/auth/login" &&
     path !== "/auth/refresh"
   ) {
-    const storedRefreshToken = localStorage.getItem("refreshToken");
-    if (!storedRefreshToken) {
-      clearAuth();
-      window.location.href = "/login";
-      throw new Error("Session expired");
-    }
-
     if (!refreshPromise) {
-      refreshPromise = silentRefresh(storedRefreshToken).finally(() => {
+      refreshPromise = silentRefresh().finally(() => {
         refreshPromise = null;
       });
     }
@@ -36,14 +40,8 @@ async function request(path, options = {}, isRetry = false) {
       throw new Error("Session expired");
     }
 
-    const retryOptions = {
-      ...options,
-      headers: {
-        ...optHeaders,
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    };
-    return request(path, retryOptions, true);
+    // _accessToken is now updated; request() will pick it up automatically
+    return request(path, options, true);
   }
 
   if (!response.ok) {
@@ -57,22 +55,14 @@ async function request(path, options = {}, isRetry = false) {
     : response.text();
 }
 
-async function silentRefresh(refreshToken) {
-  const res = await request(
-    "/auth/refresh",
-    {
-      method: "POST",
-      body: JSON.stringify({ refreshToken }),
-    },
-    true,
-  );
-  localStorage.setItem("token", res.data.token);
-  localStorage.setItem("refreshToken", res.data.refreshToken);
+async function silentRefresh() {
+  // No body needed — the HttpOnly refresh-token cookie is sent automatically.
+  const res = await request("/auth/refresh", { method: "POST" }, true);
+  _accessToken = res.data.token;
 }
 
 function clearAuth() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
+  _accessToken = null;
   localStorage.removeItem("email");
   localStorage.removeItem("firstName");
   localStorage.removeItem("lastName");
@@ -91,9 +81,8 @@ export const login = async (email, password) => {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  const { token, refreshToken, firstName, lastName } = res.data;
-  localStorage.setItem("token", token);
-  localStorage.setItem("refreshToken", refreshToken);
+  const { token, firstName, lastName } = res.data;
+  _accessToken = token;
   localStorage.setItem("email", email);
   localStorage.setItem("firstName", firstName);
   localStorage.setItem("lastName", lastName);
@@ -101,33 +90,23 @@ export const login = async (email, password) => {
 };
 
 export const logout = async () => {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (refreshToken) {
-    try {
-      await request("/auth/logout", {
-        method: "POST",
-        body: JSON.stringify({ refreshToken }),
-      });
-    } catch {
-      // logout is best-effort; ignore errors
-    }
+  try {
+    // No body needed — server reads the HttpOnly cookie and clears it.
+    await request("/auth/logout", { method: "POST" });
+  } catch {
+    // logout is best-effort; ignore errors
   }
   clearAuth();
 };
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
-
 export const createApplication = (application) =>
   request("/applications", {
     method: "POST",
-    headers: authHeaders(),
     body: JSON.stringify(application),
   });
 
 export const getApplication = (applicationId) =>
-  request(`/applications/${applicationId}`, { headers: authHeaders() });
+  request(`/applications/${applicationId}`);
 
 export const getAllApplications = (params = {}) => {
   const query = new URLSearchParams();
@@ -136,35 +115,25 @@ export const getAllApplications = (params = {}) => {
   if (params.page != null) query.set("page", params.page);
   if (params.size != null) query.set("size", params.size);
   const qs = query.toString();
-  return request(`/applications${qs ? `?${qs}` : ""}`, {
-    headers: authHeaders(),
-  });
+  return request(`/applications${qs ? `?${qs}` : ""}`);
 };
 
 export const updateApplication = (applicationId, application) =>
   request(`/applications/${applicationId}`, {
     method: "PUT",
-    headers: authHeaders(),
     body: JSON.stringify(application),
   });
 
 export const deleteApplication = (applicationId) =>
-  request(`/applications/${applicationId}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  });
+  request(`/applications/${applicationId}`, { method: "DELETE" });
 
-export const getColumns = () => request("/columns", { headers: authHeaders() });
+export const getColumns = () => request("/columns");
 
 export const addColumn = (name) =>
   request("/columns", {
     method: "POST",
-    headers: authHeaders(),
     body: JSON.stringify({ name }),
   });
 
 export const deleteColumn = (columnId) =>
-  request(`/columns/${columnId}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  });
+  request(`/columns/${columnId}`, { method: "DELETE" });

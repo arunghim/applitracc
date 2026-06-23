@@ -1,5 +1,7 @@
 package com.applitracc.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class AppUserLoginResponseDto {
 
     private String token;
@@ -27,6 +29,7 @@ public class AppUserLoginResponseDto {
         this.token = token;
     }
 
+    @JsonIgnore
     public String getRefreshToken() {
         return refreshToken;
     }

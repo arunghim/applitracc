@@ -1,5 +1,6 @@
 import "./App.css";
 import HomePage from "./pages/home/HomePage";
+import TermsPage from "./pages/terms/TermsPage";
 import StatusPage from "./pages/status/StatusPage";
 import LoginPage from "./pages/login/LoginPage";
 import SignupPage from "./pages/signup/SignupPage";
@@ -12,6 +13,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/terms" element={<TermsPage />} />
       <Route path="/health" element={<StatusPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />

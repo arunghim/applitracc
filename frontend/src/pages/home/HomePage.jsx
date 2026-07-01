@@ -33,6 +33,15 @@ function HomePage() {
           </div>
         </div>
       </div>
+      <footer className="hp__footer">
+        <p className="hp__footer-copy">
+          &copy; {new Date().getFullYear()} Applitracc
+          {" · "}
+          <Link to="/terms" className="hp__footer-link">
+            Terms &amp; Privacy
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 }

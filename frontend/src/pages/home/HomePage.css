@@ -86,6 +86,30 @@
   background: #f0f0f0;
 }
 
+.hp__footer {
+  padding: 1.5rem clamp(1rem, 5vw, 2rem);
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.hp__footer-copy {
+  font-size: 0.75rem;
+  color: #c4c4c4;
+  margin: 0;
+}
+
+.hp__footer-link {
+  color: #a3a3a3;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.hp__footer-link:hover {
+  color: #0a0a0a;
+}
+
 @media (prefers-color-scheme: dark) {
   .hp {
     background: #0a0a0a;
@@ -96,6 +120,18 @@
   }
   .hp__hero-sub {
     color: #a3a3a3;
+  }
+  .hp__footer {
+    border-top-color: #1f1f1f;
+  }
+  .hp__footer-copy {
+    color: #404040;
+  }
+  .hp__footer-link {
+    color: #525252;
+  }
+  .hp__footer-link:hover {
+    color: #fafafa;
   }
   .hp__btn-primary {
     background: #fafafa;

@@ -46,7 +46,16 @@ async function request(path, options = {}, isRetry = false) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `HTTP ${response.status}`);
+    let message;
+    try {
+      const json = JSON.parse(text);
+      message = json.message || json.error || `HTTP ${response.status}`;
+    } catch {
+      message = text || `HTTP ${response.status}`;
+    }
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
   }
 
   const contentType = response.headers.get("Content-Type") ?? "";

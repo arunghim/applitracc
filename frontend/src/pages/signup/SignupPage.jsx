@@ -33,7 +33,13 @@ function SignupPage() {
       await register(firstName, lastName, email, password);
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Sign up failed. Please try again.");
+      if (err.status === 409) {
+        setError("An account with this email already exists.");
+      } else if (err.status === 400) {
+        setError("Please check your details and try again.");
+      } else {
+        setError("Sign up failed. Please try again.");
+      }
     }
   }
 

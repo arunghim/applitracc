@@ -1,10 +1,13 @@
 package com.applitracc.backend.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.applitracc.backend.api.ErrorCode;
 import com.applitracc.backend.dto.AppUserAuthDto;
 import com.applitracc.backend.dto.AppUserLoginResponseDto;
+import com.applitracc.backend.exception.ApiException;
 import com.applitracc.backend.model.AppUser;
 import com.applitracc.backend.model.RefreshToken;
 
@@ -24,9 +27,9 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
     }
 
-    public String registerAppUser(AppUserAuthDto appUserAuthDto) {
+    public void registerAppUser(AppUserAuthDto appUserAuthDto) {
         if (userService.existsByEmail(appUserAuthDto.getEmail())) {
-            return "Email already exists";
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.VALIDATION_ERROR, "Email already in use");
         }
 
         AppUser appUser = new AppUser();
@@ -36,8 +39,6 @@ public class AuthService {
         appUser.setPassword(passwordEncoder.encode(appUserAuthDto.getPassword()));
 
         userService.saveUser(appUser);
-
-        return "User registered successfully";
     }
 
     public AppUserLoginResponseDto loginAppUser(AppUserAuthDto appUserAuthDto) {
@@ -63,7 +64,6 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.validateRefreshToken(refreshTokenStr);
         AppUser user = refreshToken.getUser();
 
-        
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
         String newAccessToken = jwtService.generateToken(user.getEmail());
         return new AppUserLoginResponseDto(newAccessToken, newRefreshToken.getToken(),

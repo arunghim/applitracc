@@ -61,23 +61,21 @@ class AuthServiceTest {
     // ──────────────────────────── register ──────────────────────────────
 
     @Test
-    void register_newEmail_savesUserAndReturnsSuccessMessage() {
+    void register_newEmail_savesUser() {
         when(userService.existsByEmail("jane@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("hashed_password");
 
-        String result = authService.registerAppUser(authDto);
+        authService.registerAppUser(authDto);
 
-        assertThat(result).isEqualTo("User registered successfully");
         verify(userService).saveUser(any(AppUser.class));
     }
 
     @Test
-    void register_duplicateEmail_returnsAlreadyExistsMessage() {
+    void register_duplicateEmail_throwsApiException() {
         when(userService.existsByEmail("jane@example.com")).thenReturn(true);
 
-        String result = authService.registerAppUser(authDto);
-
-        assertThat(result).isEqualTo("Email already exists");
+        assertThatThrownBy(() -> authService.registerAppUser(authDto))
+                .isInstanceOf(com.applitracc.backend.exception.ApiException.class);
         verify(userService, never()).saveUser(any());
     }
 

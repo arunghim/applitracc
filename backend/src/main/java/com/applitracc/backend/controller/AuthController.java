@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.applitracc.backend.api.ApiResponse;
 import com.applitracc.backend.api.ErrorCode;
 import com.applitracc.backend.dto.AppUserAuthDto;
@@ -49,10 +51,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<String>> register(@RequestBody AppUserAuthDto appUserAuthDto) {
-        String result = authService.registerAppUser(appUserAuthDto);
+    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody AppUserAuthDto appUserAuthDto) {
+        authService.registerAppUser(appUserAuthDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("User registered successfully", result));
+                .body(ApiResponse.success("User registered successfully", null));
     }
 
     @PostMapping("/login")
